@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Girl Scout Cookie Orders</title>
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --bg-card: #1e1e1e;
+            --neon-green: #39FF14;
+            --text-main: #ffffff;
+            --text-muted: #aaaaaa;
+            --border-color: #333;
+            --font-main: 'Roboto', 'Inter', system-ui, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            margin: 0;
+            padding: 0;
+            padding-bottom: 80px;
+            /* Space for sticky footer */
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1,
+        h2,
+        h3 {
+            color: var(--neon-green);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Header */
+        .app-header {
+            text-align: center;
+            border-bottom: 2px solid var(--neon-green);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        /* Cookie Grid */
+        .cookie-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 15px;
+        }
+
+        .cookie-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            transition: border 0.2s;
+        }
+
+        .cookie-card:focus-within {
+            border-color: var(--neon-green);
+            box-shadow: 0 0 10px rgba(57, 255, 20, 0.2);
+        }
+
+        .cookie-name {
+            font-weight: bold;
+            font-size: 1rem;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .cookie-price {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        input[type="number"] {
+            background: #333;
+            border: 1px solid #555;
+            color: white;
+            padding: 8px;
+            border-radius: 4px;
+            width: 60px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--neon-green);
+        }
+
+        /* Forms */
+        .form-section {
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+            border: 1px solid var(--border-color);
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            background: #333;
+            border: 1px solid #555;
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 5px;
+            box-sizing: border-box;
+        }
+
+        /* Sticky Footer */
+        .sticky-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(30, 30, 30, 0.95);
+            border-top: 2px solid var(--neon-green);
+            padding: 15px 20px;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(5px);
+            z-index: 100;
+        }
+
+        .total-display {
+            font-size: 1.1rem;
+        }
+
+        .total-price {
+            color: var(--neon-green);
+            font-weight: bold;
+            font-size: 1.4rem;
+        }
+
+        button.action-btn {
+            background: var(--neon-green);
+            color: black;
+            font-weight: bold;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            text-transform: uppercase;
+        }
+
+        button.action-btn:hover {
+            box-shadow: 0 0 15px var(--neon-green);
+            background: #32d912;
+        }
+
+        /* Admin Styles */
+        .admin-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: 1px solid #333;
+            color: #555;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .admin-panel {
+            display: none;
+            padding-bottom: 50px;
+        }
+
+        .order-row {
+            background: var(--bg-card);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            border-left: 4px solid #555;
+        }
+
+        .order-row.paid {
+            border-left-color: var(--neon-green);
+            opacity: 0.7;
+        }
+
+        .order-summary {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .order-details {
+            display: none;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #333;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            padding: 25px;
+            border-radius: 8px;
+            border: 1px solid var(--neon-green);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <button class="admin-btn" onclick="openAdminLogin()">🔒</button>
+
+    <div class="container" id="customer-view">
+        <div class="app-header">
+            <h1>Girl Scout Cookie Order</h1>
+            <p style="color:var(--text-muted)">Futuristic Flavor. Classic Taste.</p>
+        </div>
+
+        <div class="cookie-grid" id="cookie-list">
+            <!-- Cookies Injected Here -->
+        </div>
+
+        <div class="form-section">
+            <h3>Delivery Options</h3>
+            <div style="margin-bottom:15px;">
+                <label style="display:inline-flex; align-items:center; margin-right:20px; color:white;">
+                    <input type="radio" name="deliveryType" value="Address" checked onchange="toggleAddress(true)">
+                    <span style="margin-left:8px;">Deliver to Address</span>
+                </label>
+                <label style="display:inline-flex; align-items:center; color:white;">
+                    <input type="radio" name="deliveryType" value="PrimeTime" onchange="toggleAddress(false)">
+                    <span style="margin-left:8px;">Prime Time Healthcare Office</span>
+                </label>
+            </div>
+
+            <div id="address-container">
+                <label>Delivery Address</label>
+                <input type="text" id="custAddress" placeholder="Street Address, City, Zip">
+            </div>
+
+            <h3>Your Info</h3>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                <div>
+                    <label>Full Name</label>
+                    <input type="text" id="custName" placeholder="John Doe">
+                </div>
+                <div>
+                    <label>Cell Number</label>
+                    <input type="text" id="custCell" placeholder="(555) 123-4567">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sticky Footer -->
+    <div class="sticky-footer" id="public-footer">
+        <div class="total-display">
+            <span id="total-boxes">0</span> Boxes <br>
+            <span class="total-price" id="total-price">$0.00</span>
+        </div>
+        <button class="action-btn" onclick="submitOrder()">Place Order</button>
+    </div>
+
+    <!-- Admin Panel -->
+    <div class="container admin-panel" id="admin-view">
+        <div class="app-header">
+            <h2>Admin Dashboard</h2>
+            <button onclick="logout()"
+                style="background:none; border:1px solid #555; color:white; padding:5px 10px; cursor:pointer;">Logout</button>
+        </div>
+
+        <div style="margin-bottom:20px; display:flex; gap:10px;">
+            <button class="action-btn" style="flex:1; background:#333; color:white; border:1px solid #555;"
+                id="btn-active" onclick="switchAdminTab('active')">Active Orders</button>
+            <button class="action-btn" style="flex:1; background:#333; color:white; border:1px solid #555;"
+                id="btn-archive" onclick="switchAdminTab('archive')">Archive (Paid)</button>
+        </div>
+
+        <div id="order-list">
+            <!-- Orders Injected Here -->
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="loginModal" class="modal-overlay">
+        <div class="modal">
+            <h3>Admin Access</h3>
+            <input type="password" id="adminPass" placeholder="Password" style="margin-bottom:15px; width:100%;">
+            <button class="action-btn" onclick="attemptLogin()">Unlock</button>
+            <button class="action-btn" style="background:#555; margin-left:10px;"
+                onclick="closeModal('loginModal')">Cancel</button>
+        </div>
+    </div>
+
+    <div id="paymentModal" class="modal-overlay">
+        <div class="modal">
+            <h3>Mark as Paid</h3>
+            <p>How did the customer pay?</p>
+            <input type="hidden" id="paying-order-id">
+            <div style="display:grid; gap:10px; margin-top:20px;">
+                <button class="action-btn" onclick="confirmPayment('Cash')">💵 Cash</button>
+                <button class="action-btn" onclick="confirmPayment('Venmo')">📱 Venmo</button>
+                <button class="action-btn" style="background:#555;" onclick="closeModal('paymentModal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, updateDoc, doc, query, orderBy, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyD1RawXhDhEnRYHEm84t7IvBp_DdRMvoM8",
+            authDomain: "cookie-orders-ab572.firebaseapp.com",
+            projectId: "cookie-orders-ab572",
+            storageBucket: "cookie-orders-ab572.firebasestorage.app",
+            messagingSenderId: "921726101456",
+            appId: "1:921726101456:web:0bda13be4bde604a983bd5"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Use a different collection path just in case, or same logic
+        const COLLECTION_NAME = "customer_orders";
+
+        // Global Data
+        const cookies = [
+            "Adventurefuls®", "Caramel Chocolate Chip", "Caramel deLites®",
+            "Exploremores™", "Lemonades®", "Peanut Butter Patties®",
+            "Peanut Butter Sandwich", "Thin Mints®", "Trefoils®"
+        ];
+        const BOX_PRICE = 6;
+        let activeAdminTab = 'active';
+
+        // --- PUBLIC APP LOGIC ---
+        function renderCookieGrid() {
+            const container = document.getElementById('cookie-list');
+            container.innerHTML = cookies.map((c, i) => `
+                <div class="cookie-card">
+                    <span class="cookie-name">${c}</span>
+                    <div class="cookie-price">$${BOX_PRICE}</div>
+                    <input type="number" id="qty-${i}" min="0" value="0" oninput="calcTotal()">
+                </div>
+            `).join('');
+        }
+
+        window.calcTotal = () => {
+            let totalBoxes = 0;
+            cookies.forEach((c, i) => {
+                const val = parseInt(document.getElementById(`qty-${i}`).value) || 0;
+                totalBoxes += val;
+            });
+            const totalPrice = totalBoxes * BOX_PRICE;
+            document.getElementById('total-boxes').innerText = totalBoxes;
+            document.getElementById('total-price').innerText = "$" + totalPrice.toFixed(2);
+        };
+
+        window.toggleAddress = (show) => {
+            document.getElementById('address-container').style.display = show ? 'block' : 'none';
+        };
+
+        window.submitOrder = async () => {
+            const name = document.getElementById('custName').value;
+            const cell = document.getElementById('custCell').value;
+            const isPrimeTime = document.querySelector('input[name="deliveryType"]:checked').value === 'PrimeTime';
+            const address = isPrimeTime ? "Prime Time Healthcare Office" : document.getElementById('custAddress').value;
+
+            if (!name || !cell) return alert("Please enter Name and Cell Number.");
+            if (!isPrimeTime && !address) return alert("Please enter delivery address.");
+
+            let items = {};
+            let totalBoxes = 0;
+            cookies.forEach((c, i) => {
+                const val = parseInt(document.getElementById(`qty-${i}`).value) || 0;
+                if (val > 0) {
+                    items[c] = val;
+                    totalBoxes += val;
+                }
+            });
+
+            if (totalBoxes === 0) return alert("Please select at least one box.");
+
+            try {
+                await addDoc(collection(db, COLLECTION_NAME), {
+                    customerName: name,
+                    cellNumber: cell,
+                    address: address,
+                    items: items,
+                    totalBoxes: totalBoxes,
+                    totalAmount: totalBoxes * BOX_PRICE,
+                    status: 'new',
+                    paid: false,
+                    paymentMethod: null,
+                    date: new Date().toISOString()
+                });
+                alert("Order Placed Successfully!");
+                location.reload();
+            } catch (e) {
+                console.error(e);
+                alert("Error placing order. Please try again.");
+            }
+        };
+
+        // --- ADMIN LOGIC ---
+        window.openAdminLogin = () => document.getElementById('loginModal').style.display = 'flex';
+        window.closeModal = (id) => document.getElementById(id).style.display = 'none';
+
+        window.attemptLogin = () => {
+            const pass = document.getElementById('adminPass').value;
+            if (pass === "CookieQueens") {
+                document.getElementById('customer-view').style.display = 'none';
+                document.getElementById('public-footer').style.display = 'none';
+                document.getElementById('admin-view').style.display = 'block';
+                closeModal('loginModal');
+                initAdminListener();
+            } else {
+                alert("Incorrect Password");
+            }
+        };
+
+        window.logout = () => location.reload();
+
+        window.switchAdminTab = (tab) => {
+            activeAdminTab = tab;
+            document.getElementById('btn-active').style.border = tab === 'active' ? '1px solid var(--neon-green)' : '1px solid #555';
+            document.getElementById('btn-active').style.color = tab === 'active' ? 'var(--neon-green)' : 'white';
+
+            document.getElementById('btn-archive').style.border = tab === 'archive' ? '1px solid var(--neon-green)' : '1px solid #555';
+            document.getElementById('btn-archive').style.color = tab === 'archive' ? 'var(--neon-green)' : 'white';
+
+            initAdminListener(); // Refresh list
+        };
+
+        function initAdminListener() {
+            const q = query(collection(db, COLLECTION_NAME), orderBy('date', 'desc'));
+            onSnapshot(q, (snap) => {
+                const container = document.getElementById('order-list');
+                let html = "";
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    const isPaid = d.paid === true;
+
+                    // Filter based on tab
+                    if (activeAdminTab === 'active' && isPaid) return;
+                    if (activeAdminTab === 'archive' && !isPaid) return;
+
+                    const dateStr = new Date(d.date).toLocaleDateString() + " " + new Date(d.date).toLocaleTimeString();
+
+                    let itemsHtml = "";
+                    for (const [cookie, qty] of Object.entries(d.items)) {
+                        itemsHtml += `<div>${qty} x ${cookie}</div>`;
+                    }
+
+                    html += `
+                        <div class="order-row ${isPaid ? 'paid' : ''}" onclick="this.querySelector('.order-details').style.display = this.querySelector('.order-details').style.display==='block'?'none':'block'">
+                            <div class="order-summary">
+                                <div>
+                                    <strong style="color:white; font-size:1.1rem;">${d.customerName}</strong>
+                                    <div style="font-size:0.8rem; color:#888;">${dateStr}</div>
+                                </div>
+                                <div style="text-align:right;">
+                                    <div style="color:var(--neon-green); font-weight:bold;">$${d.totalAmount}</div>
+                                    <div style="font-size:0.9rem;">${d.totalBoxes} Boxes</div>
+                                </div>
+                            </div>
+                            <div class="order-details">
+                                <p><strong>Phone:</strong> ${d.cellNumber}</p>
+                                <p><strong>Address:</strong> ${d.address}</p>
+                                <div style="margin:10px 0; padding:10px; background:#333; border-radius:4px;">
+                                    ${itemsHtml}
+                                </div>
+                                ${!isPaid ? `<button class="action-btn" style="width:100%; font-size:0.9rem;" onclick="event.stopPropagation(); window.openPaymentModal('${doc.id}')">Mark as Paid</button>` : `<div style="color:var(--neon-green)">✅ Paid via ${d.paymentMethod}</div>`}
+                            </div>
+                        </div>
+                    `;
+                });
+                if (html === "") html = "<p style='text-align:center; color:#666;'>No orders found.</p>";
+                container.innerHTML = html;
+            });
+        }
+
+        window.openPaymentModal = (id) => {
+            document.getElementById('paying-order-id').value = id;
+            document.getElementById('paymentModal').style.display = 'flex';
+        };
+
+        window.confirmPayment = async (method) => {
+            const id = document.getElementById('paying-order-id').value;
+            try {
+                await updateDoc(doc(db, COLLECTION_NAME, id), {
+                    paid: true,
+                    paymentMethod: method,
+                    status: 'paid'
+                });
+                closeModal('paymentModal');
+            } catch (e) { console.error(e); alert("Error updating order."); }
+        };
+
+        // Init
+        renderCookieGrid();
+
+    </script>
+</body>
+
+</html>
