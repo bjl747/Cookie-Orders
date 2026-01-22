@@ -7,23 +7,28 @@
     <title>Girl Scout Cookie Orders</title>
     <style>
         :root {
-            --bg-dark: #121212;
-            --bg-card: #1e1e1e;
+            --bg-dark: #000000;
+            --bg-card: rgba(20, 20, 20, 0.8);
             --neon-green: #39FF14;
-            --text-main: #ffffff;
+            --tron-cyan: #00f3ff;
+            --text-main: #e0e0e0;
             --text-muted: #aaaaaa;
-            --border-color: #333;
-            --font-main: 'Roboto', 'Inter', system-ui, sans-serif;
+            --font-main: 'Segoe UI', 'Roboto', sans-serif;
+            --font-display: 'Courier New', Courier, monospace;
         }
 
         body {
             background-color: var(--bg-dark);
+            /* Tron Grid Background */
+            background-image:
+                linear-gradient(rgba(0, 243, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.1) 1px, transparent 1px);
+            background-size: 40px 40px;
             color: var(--text-main);
             font-family: var(--font-main);
             margin: 0;
             padding: 0;
             padding-bottom: 80px;
-            /* Space for sticky footer */
         }
 
         .container {
@@ -35,17 +40,23 @@
         h1,
         h2,
         h3 {
-            color: var(--neon-green);
+            color: var(--tron-cyan);
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
+            font-family: var(--font-display);
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
         }
 
         /* Header */
+        /* Header */
         .app-header {
             text-align: center;
-            border-bottom: 2px solid var(--neon-green);
+            border-bottom: 2px solid var(--tron-cyan);
             padding-bottom: 20px;
             margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0, 243, 255, 0.1);
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 0 0 10px 10px;
         }
 
         /* Cookie Grid */
@@ -57,11 +68,19 @@
 
         .cookie-card {
             background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
+            border: 2px solid #333;
+            border-radius: 4px;
             padding: 15px;
             text-align: center;
-            transition: border 0.2s;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(5px);
+        }
+
+        .cookie-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px currentColor;
         }
 
         .cookie-card:focus-within {
@@ -248,8 +267,8 @@
 
     <div class="container" id="customer-view">
         <div class="app-header">
-            <h1>Girl Scout Cookie Order</h1>
-            <p style="color:var(--text-muted)">Futuristic Flavor. Classic Taste.</p>
+            <h1>Troop 45672</h1>
+            <h3 style="color:white; margin:0; font-size:1.1rem; text-shadow:none;">Supporting Ella</h3>
         </div>
 
         <div class="cookie-grid" id="cookie-list">
@@ -362,24 +381,43 @@
         const COLLECTION_NAME = "customer_orders";
 
         // Global Data
+        // Global Data
         const cookies = [
             "Adventurefuls®", "Caramel Chocolate Chip", "Caramel deLites®",
             "Exploremores™", "Lemonades®", "Peanut Butter Patties®",
             "Peanut Butter Sandwich", "Thin Mints®", "Trefoils®"
         ];
+
+        const cookieColors = {
+            "Adventurefuls®": "#D4B37E",        // Tan/Gold
+            "Caramel Chocolate Chip": "#00558C", // Dark Blue
+            "Caramel deLites®": "#602D89",      // Purple
+            "Exploremores™": "#F28E86",         // Salmon Pink
+            "Lemonades®": "#FFF200",            // Bright Yellow
+            "Peanut Butter Patties®": "#DA291C",// Red
+            "Peanut Butter Sandwich": "#F6821F",// Orange
+            "Thin Mints®": "#00A94F",           // Green
+            "Trefoils®": "#0077C8"              // Blue
+        };
+
         const BOX_PRICE = 6;
         let activeAdminTab = 'active';
 
         // --- PUBLIC APP LOGIC ---
         function renderCookieGrid() {
             const container = document.getElementById('cookie-list');
-            container.innerHTML = cookies.map((c, i) => `
-                <div class="cookie-card">
-                    <span class="cookie-name">${c}</span>
+            container.innerHTML = cookies.map((c, i) => {
+                const color = cookieColors[c] || '#fff';
+                // Adjust text color for light backgrounds if needed, or just use white shadow
+                const borderColor = color;
+
+                return `
+                <div class="cookie-card" style="border-color: ${borderColor}; color: white; box-shadow: 0 0 5px ${borderColor}, inset 0 0 5px ${borderColor};">
+                    <span class="cookie-name" style="color: ${color}; text-shadow: 0 0 5px ${color};">${c}</span>
                     <div class="cookie-price">$${BOX_PRICE}</div>
-                    <input type="number" id="qty-${i}" min="0" value="0" oninput="calcTotal()">
+                    <input type="number" id="qty-${i}" min="0" value="0" oninput="calcTotal()" style="border-color:${color}; color:${color}; font-weight:bold;">
                 </div>
-            `).join('');
+            `}).join('');
         }
 
         window.calcTotal = () => {
