@@ -64,6 +64,8 @@
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
             gap: 15px;
+            align-items: stretch;
+            /* Ensure equal height */
         }
 
         .cookie-card {
@@ -76,6 +78,12 @@
             position: relative;
             overflow: hidden;
             backdrop-filter: blur(5px);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+            min-height: 180px;
+            box-sizing: border-box;
         }
 
         .cookie-card:hover {
@@ -258,6 +266,25 @@
             max-width: 400px;
             text-align: center;
         }
+
+        /* Success Toast */
+        #success-toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid var(--neon-green);
+            color: var(--neon-green);
+            padding: 20px 40px;
+            border-radius: 8px;
+            z-index: 300;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(57, 255, 20, 0.3);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
     </style>
 </head>
 
@@ -265,10 +292,17 @@
 
     <button class="admin-btn" onclick="openAdminLogin()">🔒</button>
 
+    <!-- Success Toast -->
+    <div id="success-toast">
+        <h2 style="margin:0; font-size:1.5rem;">Thank You!</h2>
+        <p style="color:white; margin:10px 0 0 0;">Supporting Troop 45672 & Ella</p>
+    </div>
+
     <div class="container" id="customer-view">
         <div class="app-header">
-            <h1>Troop 45672</h1>
-            <h3 style="color:white; margin:0; font-size:1.1rem; text-shadow:none;">Supporting Ella</h3>
+            <h1>Girl Scout Cookies</h1>
+            <p style="color:var(--text-main); font-size:0.9rem; margin-top:5px; margin-bottom:0;">Supporting Troop 45672
+                & Ella</p>
         </div>
 
         <div class="cookie-grid" id="cookie-list">
@@ -413,9 +447,11 @@
 
                 return `
                 <div class="cookie-card" style="border-color: ${borderColor}; color: white; box-shadow: 0 0 5px ${borderColor}, inset 0 0 5px ${borderColor};">
-                    <span class="cookie-name" style="color: ${color}; text-shadow: 0 0 5px ${color};">${c}</span>
-                    <div class="cookie-price">$${BOX_PRICE}</div>
-                    <input type="number" id="qty-${i}" min="0" value="0" oninput="calcTotal()" style="border-color:${color}; color:${color}; font-weight:bold;">
+                    <div style="flex-grow:1; display:flex; flex-direction:column; justify-content:center; margin-bottom:10px;">
+                        <span class="cookie-name" style="color: ${color}; text-shadow: 0 0 2px ${color};">${c}</span>
+                        <div class="cookie-price">$${BOX_PRICE}</div>
+                    </div>
+                    <input type="number" id="qty-${i}" min="0" value="0" oninput="calcTotal()" style="border-color:${color}; color:${color}; font-weight:bold; margin-top:auto; width:80%; align-self:center;">
                 </div>
             `}).join('');
         }
@@ -469,8 +505,14 @@
                     paymentMethod: null,
                     date: new Date().toISOString()
                 });
-                alert("Order Placed Successfully!");
-                location.reload();
+
+                // Show Custom Success Message
+                const toast = document.getElementById('success-toast');
+                toast.style.display = 'flex';
+                setTimeout(() => {
+                    location.reload();
+                }, 3000);
+
             } catch (e) {
                 console.error(e);
                 alert("Error placing order. Please try again.");
@@ -541,7 +583,11 @@
                             </div>
                             <div class="order-details">
                                 <p><strong>Phone:</strong> ${d.cellNumber}</p>
-                                <p><strong>Address:</strong> ${d.address}</p>
+                                <p><strong>Address:</strong> 
+                                    <a href="https://maps.google.com/?q=${encodeURIComponent(d.address || '')}" target="_blank" style="color:var(--tron-cyan); text-decoration:none;">
+                                        ${d.address} 🔗
+                                    </a>
+                                </p>
                                 <div style="margin:10px 0; padding:10px; background:#333; border-radius:4px;">
                                     ${itemsHtml}
                                 </div>
@@ -574,7 +620,6 @@
 
         // Init
         renderCookieGrid();
-
     </script>
 </body>
 
