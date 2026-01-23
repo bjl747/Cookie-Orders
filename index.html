@@ -425,6 +425,8 @@
             onclick="switchAdminTab('archive')">Archive (Paid)</button>
         <button class="action-btn" style="flex:1; background:#333; color:white; border:1px solid #555;"
             id="btn-accounting" onclick="switchAdminTab('accounting')">Accounting</button>
+        <button class="action-btn" style="flex:1; background:#333; color:white; border:1px solid #555;" id="btn-totals"
+            onclick="switchAdminTab('totals')">Totals</button>
     </div>
 
     <div id="order-list">
@@ -450,6 +452,13 @@
         <h3 style="border-bottom:1px solid #333; padding-bottom:10px;">Who Owes What (Unpaid)</h3>
         <div id="unpaid-list">
             <!-- Unpaid list injected here -->
+        </div>
+    </div>
+
+    <div id="totals-view" style="display:none;">
+        <h3 style="margin-bottom:20px;">Outstanding Cookie Totals (Unpaid)</h3>
+        <div id="totals-grid" class="cookie-grid">
+            <!-- Totals injected here -->
         </div>
     </div>
     </div>
@@ -655,7 +664,8 @@
             activeAdminTab = tab;
 
             // Updates buttons
-            ['active', 'archive', 'accounting'].forEach(t => {
+            // Updates buttons
+            ['active', 'archive', 'accounting', 'totals'].forEach(t => {
                 const btn = document.getElementById(`btn-${t}`);
                 if (btn) {
                     btn.style.border = tab === t ? '1px solid var(--neon-green)' : '1px solid #555';
@@ -665,14 +675,15 @@
 
             const orderList = document.getElementById('order-list');
             const accountView = document.getElementById('accounting-view');
+            const totalsView = document.getElementById('totals-view');
 
-            if (tab === 'accounting') {
-                orderList.style.display = 'none';
-                accountView.style.display = 'block';
-            } else {
-                orderList.style.display = 'block';
-                accountView.style.display = 'none';
-            }
+            orderList.style.display = 'none';
+            accountView.style.display = 'none';
+            totalsView.style.display = 'none';
+
+            if (tab === 'accounting') accountView.style.display = 'block';
+            else if (tab === 'totals') totalsView.style.display = 'block';
+            else orderList.style.display = 'block';
 
             initAdminListener(); // Refresh list/view
         };
@@ -690,7 +701,7 @@
                 let cashTotal = 0;
                 let venmoTotal = 0;
                 let unpaidTotal = 0;
-
+                let cookieTotals = {}; // Aggregation map
                 window.ordersCache = {}; // Reset cache
 
                 snap.forEach(doc => {
@@ -704,6 +715,10 @@
                         else if (d.paymentMethod === 'Venmo') venmoTotal += d.totalAmount;
                     } else {
                         unpaidTotal += d.totalAmount;
+                        // Aggregate Totals for Unpaid Only
+                        for (const [cookie, qty] of Object.entries(d.items)) {
+                            cookieTotals[cookie] = (cookieTotals[cookie] || 0) + qty;
+                        }
                     }
 
                     const dateStr = new Date(d.date).toLocaleDateString() + " " + new Date(d.date).toLocaleTimeString();
@@ -770,6 +785,25 @@
                 document.getElementById('total-venmo').innerText = "$" + venmoTotal.toFixed(2);
                 document.getElementById('total-unpaid').innerText = "$" + unpaidTotal.toFixed(2);
                 unpaidContainer.innerHTML = unpaidListHtml || "<p style='color:#666;'>Everyone is paid up!</p>";
+
+                // Render Totals Tab
+                const totalsGrid = document.getElementById('totals-grid');
+                let totalsHtml = "";
+                // Sort keys alphabetically
+                Object.keys(cookieColors).sort().forEach(c => {
+                    const count = cookieTotals[c] || 0;
+                    if (count > 0 || true) { // Show all
+                        const color = cookieColors[c];
+                        totalsHtml += `
+                            <div class="cookie-card" style="border-color:${color}; color:white; min-height:100px; justify-content:center;">
+                                <span class="cookie-name" style="color:${color}; font-size:1.2rem;">${c}</span>
+                                <div style="font-size:2rem; font-weight:bold;">${count}</div>
+                                <div style="font-size:0.8rem; color:#888;">Boxes Needed</div>
+                            </div>
+                        `;
+                    }
+                });
+                totalsGrid.innerHTML = totalsHtml;
             });
         }
 
